@@ -53,10 +53,8 @@ The trained model is seamlessly integrated into the web application, providing r
 The web application is deployed on Heroku, making it accessible to users online. Heroku offers scalability and ensures the model's accessibility.
 
 ## Team Members
-- Srinivas Reddy Chitukula (Developer, Deployment)
-- Krishna Vipul Shah (Documentation, Testing)
-- Amarnadh Kari (Project Coordinator)
-- Bala Chikkala (Developer)
+- Srinivas Reddy Chitukula (Developer)
+
 
 ## References
 - [Kaggle Dataset](https://www.kaggle.com/code/sukeshtech17/breast-cancer-end-to-end-system-cnn)
