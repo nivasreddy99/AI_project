@@ -1,174 +1,110 @@
-
-
-from flask import Flask, render_template, request, session, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash
 import os
 from werkzeug.utils import secure_filename
 from tensorflow.keras.models import load_model
-import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 
 UPLOAD_FOLDER = './flask app/assets/images'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-# Create Database if it doesnt exist
 
-app = Flask(__name__,static_url_path='/assets',
-            static_folder='./flask app/assets', 
+app = Flask(__name__, static_url_path='/assets',
+            static_folder='./flask app/assets',
             template_folder='./flask app')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-
+# Function to render the home page
 @app.route('/')
 def root():
-   return render_template('index.html')
+    """
+    Renders the home page.
 
+    Returns:
+    str: Rendered HTML content for the home page.
+    """
+    return render_template('index.html')
+
+# Function to render the index page
 @app.route('/index.html')
 def index():
-   return render_template('index.html')
+    """
+    Renders the index page.
 
+    Returns:
+    str: Rendered HTML content for the index page.
+    """
+    return render_template('index.html')
 
-
+# Function to render the upload page
 @app.route('/upload.html')
 def upload():
-   return render_template('upload.html')
+    """
+    Renders the upload page.
 
+    Returns:
+    str: Rendered HTML content for the upload page.
+    """
+    return render_template('upload.html')
 
+# Function to render the upload_ct page
 @app.route('/upload_ct.html')
 def upload_ct():
-   return render_template('upload_ct.html')
+    """
+    Renders the CT image upload page.
 
-@app.route('/uploaded_chest', methods = ['POST', 'GET'])
-def uploaded_chest():
-   if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file:
-            # filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'upload_chest.jpg'))
+    Returns:
+    str: Rendered HTML content for the CT image upload page.
+    """
+    return render_template('upload_ct.html')
 
-   resnet_chest = load_model('models/model.h5')
-   vgg_chest = load_model('models/model.h5')
-   inception_chest = load_model('models/model.h5')
-   xception_chest = load_model('models/model.h5')
-
-   image = cv2.imread('./flask app/assets/images/upload_chest.jpg') # read file 
-   image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) # arrange format as per keras
-   image = cv2.resize(image,(50,50))
-   image = np.array(image) / 255
-   image = np.expand_dims(image, axis=0)
-   
-   resnet_pred = resnet_chest.predict(image)
-   probability = resnet_pred[0]
-   print("Resnet Predictions:")
-   if probability[0] > 0.5:
-      resnet_chest_pred = str('%.2f' % (probability[0]*100) + '% Breast Cancer') 
-   else:
-      resnet_chest_pred = str('%.2f' % ((1-probability[0])*100) + '% No Breast Cancer')
-   print(resnet_chest_pred)
-
-   vgg_pred = vgg_chest.predict(image)
-   probability = vgg_pred[0]
-   print("VGG Predictions:")
-   if probability[0] > 0.5:
-      vgg_chest_pred = str('%.2f' % (probability[0]*100) + '% Breast Cancer') 
-   else:
-      vgg_chest_pred = str('%.2f' % ((1-probability[0])*100) + '% No Breast Cancer')
-   print(vgg_chest_pred)
-
-   inception_pred = inception_chest.predict(image)
-   probability = inception_pred[0]
-   print("Inception Predictions:")
-   if probability[0] > 0.5:
-      inception_chest_pred = str('%.2f' % (probability[0]*100) + '% Breast Cancer') 
-   else:
-      inception_chest_pred = str('%.2f' % ((1-probability[0])*100) + '% No Breast Cancer')
-   print(inception_chest_pred)
-
-   xception_pred = xception_chest.predict(image)
-   probability = xception_pred[0]
-   print("Xception Predictions:")
-   if probability[0] > 0.5:
-      xception_chest_pred = str('%.2f' % (probability[0]*100) + '% Breast Cancer') 
-   else:
-      xception_chest_pred = str('%.2f' % ((1-probability[0])*100) + '% No Breast Cancer')
-   print(xception_chest_pred)
-
-   return render_template('results_chest.html',resnet_chest_pred=resnet_chest_pred,vgg_chest_pred=vgg_chest_pred,inception_chest_pred=inception_chest_pred,xception_chest_pred=xception_chest_pred)
-
-@app.route('/uploaded_ct', methods = ['POST', 'GET'])
+# Function to handle the uploaded CT image
+@app.route('/uploaded_ct', methods=['POST', 'GET'])
 def uploaded_ct():
-   if request.method == 'POST':
-        # check if the post request has the file part
+    """
+    Handles the uploaded CT image.
+
+    Returns:
+    str: Rendered HTML content for the results page.
+    """
+    if request.method == 'POST':
+        # Check if the post request has the file part
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
         file = request.files['file']
-        # if user does not select file, browser also
-        # submit a empty part without filename
+        # If the user does not select a file, the browser also
+        # submits an empty part without a filename
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
         if file:
-            # filename = secure_filename(file.filename)
+            # Save the uploaded file
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'upload_ct.jpg'))
 
-   resnet_ct = load_model('models/model.h5')
-   vgg_ct = load_model('models/BreastCNN_custom2.h5')
-   inception_ct = load_model('models/model.h5')
-   xception_ct = load_model('models/model.h5')
+    # Load the pre-trained model for CT image analysis
+    model_ct = load_model('models/model.h5')
 
-   image = cv2.imread('./flask app/assets/images/upload_ct.jpg') # read file 
-   image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) # arrange format as per keras
-   image = cv2.resize(image,( 50, 50))
-   image = np.array(image) / 255
-   image = np.expand_dims(image, axis=0)
-   
-   resnet_pred = resnet_ct.predict(image)
-   probability = resnet_pred[0]
-   print("Resnet Predictions:")
-   if probability[0] > 0.5:
-      resnet_ct_pred = str('%.2f' % (probability[0]*100) + '% Breast Cancer') 
-   else:
-      resnet_ct_pred = str('%.2f' % ((1-probability[0])*100) + '% No Breast Cancer')
-   print(resnet_ct_pred)
+    # Read the uploaded CT image
+    image = cv2.imread('./flask app/assets/images/upload_ct.jpg')  # Read the file
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Arrange the format as per Keras
+    image = cv2.resize(image, (50, 50))
+    image = np.array(image) / 255
+    image = np.expand_dims(image, axis=0)
 
-   vgg_pred = vgg_ct.predict(image)
-   probability = vgg_pred[0]
-   print("VGG Predictions:")
-   if probability[0] > 0.5:
-      vgg_ct_pred = str('%.2f' % (probability[0]*100) + '% Breast Cancer') 
-   else:
-      vgg_ct_pred = str('%.2f' % ((1-probability[0])*100) + '% No Breast Cancer')
-   print(vgg_ct_pred)
+    # Make predictions using the loaded model
+    pred = model_ct.predict(image)
+    probability = pred[0]
+    print("Breast Cancer Predictions:")
+    if probability[0] > 0.5:
+        model_ct_pred = str('%.2f' % (probability[0] * 100) + '% Breast Cancer')
+    else:
+        model_ct_pred = str('%.2f' % ((1 - probability[0]) * 100) + '% No Breast Cancer')
+    print(model_ct_pred)
 
-   inception_pred = inception_ct.predict(image)
-   probability = inception_pred[0]
-   print("Inception Predictions:")
-   if probability[0] > 0.5:
-      inception_ct_pred = str('%.2f' % (probability[0]*100) + '% Breast Cancer') 
-   else:
-      inception_ct_pred = str('%.2f' % ((1-probability[0])*100) + '% No Breast Cancer')
-   print(inception_ct_pred)
+    # Render the results page with the prediction
+    return render_template('results_ct.html', pred=model_ct_pred)
 
-   xception_pred = xception_ct.predict(image)
-   probability = xception_pred[0]
-   print("Xception Predictions:")
-   if probability[0] > 0.5:
-      xception_ct_pred = str('%.2f' % (probability[0]*100) + '% Breast Cancer') 
-   else:
-      xception_ct_pred = str('%.2f' % ((1-probability[0])*100) + '% No Breast Cancer')
-   print(xception_ct_pred)
-
-   return render_template('results_ct.html',resnet_ct_pred=resnet_ct_pred,vgg_ct_pred=vgg_ct_pred,inception_ct_pred=inception_ct_pred,xception_ct_pred=xception_ct_pred)
-
+# Run the Flask app
 if __name__ == '__main__':
-   app.secret_key = ".."
-   app.run()
+    app.secret_key = ".."
+    app.run()
