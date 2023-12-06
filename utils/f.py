@@ -1,4 +1,4 @@
 import random
 
 def F():
-    return random.randint(2, 5)  
+    return random.uniform(2.0, 5.0)  
