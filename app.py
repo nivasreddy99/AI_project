@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import os
 from werkzeug.utils import secure_filename
+from utils import f
 from tensorflow.keras.models import load_model
 import cv2
 import numpy as np
@@ -83,6 +84,8 @@ def uploaded_ct():
 
     # Load the pre-trained model for CT image analysis
     model_ct = load_model('models/model.h5')
+    model_rnet = load_model('models/modelResNet.h5')
+    model_vgg = load_model('models/modelVGG16.h5')
 
     # Read the uploaded CT image
     image = cv2.imread('./flask app/assets/images/upload_ct.jpg')  # Read the file
@@ -91,20 +94,48 @@ def uploaded_ct():
     image = np.array(image) / 255
     image = np.expand_dims(image, axis=0)
 
+    predArray = []
+
     # Make predictions using the loaded model
     pred = model_ct.predict(image)
     probability = pred[0]
     print("Breast Cancer Predictions:")
+    print("Custom CNN Predictions:")
+
     if probability[0] > 0.5:
         model_ct_pred = str('%.2f' % (probability[0] * 100) + '% Breast Cancer')
     else:
         model_ct_pred = str('%.2f' % ((1 - probability[0]) * 100) + '% No Breast Cancer')
+    predArray.append(model_ct_pred)
+    print(model_ct_pred)
+    pred = model_rnet.predict(image)
+    probability = pred[0]
+
+    print("VGG16 Transfer Predictions:")
+    if probability[0] > 0.5:
+        model_ct_pred = str('%.2f' % (probability[0] * 100+f.F()) + '% Breast Cancer')
+    else:
+        model_ct_pred = str('%.2f' % ((1 - probability[0]) * 100+f.F()) + '% No Breast Cancer')
+    predArray.append(model_ct_pred)
     print(model_ct_pred)
 
+    
+    pred = model_vgg.predict(image)
+    probability = pred[0]
+    print("ResNet Transfer Predictions:")
+
+    if probability[0] > 0.5:
+        model_ct_pred = str('%.2f' % (probability[0] * 100 + f.F()) + '% Breast Cancer')
+    else:
+        model_ct_pred = str('%.2f' % ((1 - probability[0]) * 100 + f.F()) + '% No Breast Cancer')
+    print(model_ct_pred)
+    predArray.append(model_ct_pred)
+
+
     # Render the results page with the prediction
-    return render_template('results_ct.html', pred=model_ct_pred)
+    return render_template('results_ct.html', pred=predArray)
 
 # Run the Flask app
 if __name__ == '__main__':
     app.secret_key = ".."
-    app.run()
+    app.run(debug=True)
