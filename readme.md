@@ -4,7 +4,7 @@
 This project aims to enhance breast cancer detection using machine learning. Focused on developing a deep learning model for accurately classifying histopathology images as malignant or benign, leveraging a dataset of Invasive Ductal Carcinoma (IDC) images.
 
 ## Team Members
-- Sreenivas Reddy Chitkula
+- Srinivas Reddy Chitkula
 - Rohit Potluri
 - Ruthvik Ravula
 - Prudhvi Nadh Pemmasani
